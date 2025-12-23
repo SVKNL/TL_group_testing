@@ -1,0 +1,24 @@
+{% for node in nodes %}
+<li class="mb-1">
+    <div class="d-flex align-items-center">
+        {% if node.get_children %}
+        <button class="btn btn-sm btn-outline-secondary me-2 tree-toggle" type="button"
+                data-bs-toggle="collapse" data-bs-target="#dept-{{ node.id }}"
+                aria-expanded="true" aria-controls="dept-{{ node.id }}">
+            <span class="toggle-icon">−</span>
+        </button>
+        {% else %}
+        <span class="me-2 text-secondary" style="width: 1.75rem; display: inline-block;">•</span>
+        {% endif %}
+        <a href="?department={{ node.id }}" class="text-decoration-none fw-semibold">
+            {{ node.name }}
+        </a>
+        <span class="badge text-bg-secondary ms-2">{{ node.employee_count|default:0 }}</span>
+    </div>
+    {% if node.get_children %}
+    <ul class="list-unstyled ms-3 collapse show tree-branch" id="dept-{{ node.id }}">
+        {% include "employees/partials/department_node.html" with nodes=node.get_children %}
+    </ul>
+    {% endif %}
+</li>
+{% endfor %}

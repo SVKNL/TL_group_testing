@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Оргструктура{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="d-flex align-items-center mb-3">
+            <div>
+                <h1 class="h4 mb-1">Подразделения</h1>
+            </div>
+        </div>
+        {% if departments %}
+            <ul class="list-unstyled">
+                {% include 'employees/partials/department_node.html' with nodes=departments %}
+            </ul>
+        {% else %}
+            <div class="alert alert-warning">Подразделения отсутствуют.</div>
+        {% endif %}
+    </div>
+    <div class="col-lg-7">
+        <div class="d-flex align-items-center mb-3">
+            <div>
+                <h2 class="h4 mb-1">Сотрудники</h2>
+                {% if selected_department %}
+                    <p class="text-muted small mb-0">
+                        Показаны сотрудники подразделения "{{ selected_department.name }}" и его дочерних веток.
+                    </p>
+                {% else %}
+                    <p class="text-muted small mb-0">Выберите подразделение в дереве слева.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% if selected_department %}
+            <div class="list-group mb-3 shadow-sm">
+                {% for employee in page_obj %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between flex-column flex-sm-row">
+                            <div>
+                                <div class="fw-semibold">{{ employee.full_name }}</div>
+                                <div class="text-muted small">{{ employee.position }}</div>
+                                <div class="text-muted small">Принят: {{ employee.hired_at }}</div>
+                                <div class="text-muted small">Подразделение: {{ employee.department.name }}</div>
+                            </div>
+                            <div class="text-sm-end mt-2 mt-sm-0">
+                                <div class="fw-semibold">{{ employee.salary }} руб.</div>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="list-group-item text-muted">Сотрудники отсутствуют.</div>
+                {% endfor %}
+            </div>
+            {% if page_obj.paginator.num_pages > 1 %}
+                <nav aria-label="Пагинация">
+                    <ul class="pagination">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?department={{ selected_department.id }}&page={{ page_obj.previous_page_number }}">Назад</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">Назад</span></li>
+                        {% endif %}
+                        <li class="page-item disabled"><span class="page-link">Стр. {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?department={{ selected_department.id }}&page={{ page_obj.next_page_number }}">Вперед</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">Вперед</span></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-info">Выберите подразделение в дереве, чтобы увидеть сотрудников.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.querySelectorAll('.tree-toggle').forEach(function (button) {
+        const icon = button.querySelector('.toggle-icon');
+        const targetSelector = button.getAttribute('data-bs-target');
+        const target = targetSelector ? document.querySelector(targetSelector) : null;
+
+        const syncIcon = () => {
+            if (!icon) return;
+            const expanded = button.getAttribute('aria-expanded') === 'true';
+            icon.textContent = expanded ? '−' : '+';
+        };
+
+        syncIcon();
+
+        if (target) {
+            target.addEventListener('shown.bs.collapse', syncIcon);
+            target.addEventListener('hidden.bs.collapse', syncIcon);
+        }
+    });
+</script>
+{% endblock %}
